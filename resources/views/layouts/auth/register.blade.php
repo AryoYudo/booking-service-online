@@ -170,14 +170,40 @@ body{
                             </div>
 
                             <div class="form-floating mb-3">
+                                @php
+                                    $hondaCarModels = [
+                                        'Honda Brio',
+                                        'Honda Brio Satya',
+                                        'Honda Brio RS',
+                                        'Honda City',
+                                        'Honda City Hatchback',
+                                        'Honda City Hatchback RS',
+                                        'Honda Civic',
+                                        'Honda Civic RS',
+                                        'Honda Civic Type R',
+                                        'Honda Accord',
+                                        'Honda HR-V',
+                                        'Honda WR-V',
+                                        'Honda BR-V',
+                                        'Honda CR-V',
+                                        'Honda ZR-V e:HEV',
+                                        'Honda Odyssey',
+                                        'Honda Mobilio',
+                                        'Honda Jazz',
+                                        'Honda Freed',
+                                        'Honda Step WGN e:HEV',
+                                        'Honda e:N1',
+                                    ];
+                                @endphp
                                 <select class="form-select" name="vehicle_type">
-                                    <option value="" disabled selected>Pilih Tipe Kendaraan</option>
-                                    <option value="Honda Beat" {{ old('vehicle_type') == 'Honda Beat' ? 'selected' : '' }}>Honda Beat</option>
-                                    <option value="Honda Vario 160" {{ old('vehicle_type') == 'Honda Vario 160' ? 'selected' : '' }}>Honda Vario 160</option>
-                                    <option value="Honda PCX 160" {{ old('vehicle_type') == 'Honda PCX 160' ? 'selected' : '' }}>Honda PCX 160</option>
-                                    <option value="Honda Scoopy" {{ old('vehicle_type') == 'Honda Scoopy' ? 'selected' : '' }}>Honda Scoopy</option>
+                                    <option value="" disabled {{ old('vehicle_type') ? '' : 'selected' }}>Pilih Model Mobil Honda</option>
+                                    @foreach($hondaCarModels as $model)
+                                        <option value="{{ $model }}" {{ old('vehicle_type') == $model ? 'selected' : '' }}>
+                                            {{ $model }}
+                                        </option>
+                                    @endforeach
                                 </select>
-                                <label>Tipe Kendaraan</label>
+                                <label>Model Mobil Honda</label>
                             </div>
 
                             <div class="form-floating mb-3">
