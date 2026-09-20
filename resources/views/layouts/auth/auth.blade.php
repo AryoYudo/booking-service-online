@@ -58,6 +58,10 @@
         }
 
         .toggle-password {
+            border: 0;
+            padding: 0;
+            background: transparent;
+            color: inherit;
             position: absolute;
             right: 15px;
             top: 15px;
@@ -194,7 +198,8 @@
 
                             </div>
 
-                            <i class="bi bi-eye toggle-password"></i>
+                            <button type="button" class="bi bi-eye toggle-password"
+                                aria-label="Tampilkan password" aria-pressed="false"></button>
 
                         </div>
 
@@ -240,6 +245,18 @@
     `);
 
         }
+
+        $('.toggle-password').on('click', function() {
+            const passwordInput = $('#password');
+            const isPasswordHidden = passwordInput.attr('type') === 'password';
+
+            passwordInput.attr('type', isPasswordHidden ? 'text' : 'password');
+            $(this)
+                .toggleClass('bi-eye', !isPasswordHidden)
+                .toggleClass('bi-eye-slash', isPasswordHidden)
+                .attr('aria-label', isPasswordHidden ? 'Sembunyikan password' : 'Tampilkan password')
+                .attr('aria-pressed', isPasswordHidden ? 'true' : 'false');
+        });
 
         $('#btnLogin').click(function() {
 
