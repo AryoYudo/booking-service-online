@@ -16,7 +16,9 @@ class ReportController extends Controller
 
     public function getReport(Request $request)
     {
-        if($request->type == 'booking'){
+        $validated = $this->validateReportRequest($request);
+
+        if($validated['type'] === 'booking'){
 
             $data = DB::table('bookings as b')
                 ->join('customers as c','b.customer_id','=','c.customer_id')
@@ -31,15 +33,15 @@ class ReportController extends Controller
                     's.service_date'
                 )
                 ->whereBetween('s.service_date',[
-                    $request->start_date,
-                    $request->end_date
+                    $validated['start_date'],
+                    $validated['end_date']
                 ])
                 ->get();
 
             return response()->json($data);
         }
 
-        if($request->type == 'complaint'){
+        if($validated['type'] === 'complaint'){
 
             $data = DB::table('complaints as c')
                 ->join('customers as cs','c.customer_id','=','cs.customer_id')
@@ -51,7 +53,7 @@ class ReportController extends Controller
                 )
                 ->whereBetween(
                     DB::raw('DATE(c.created_at)'),
-                    [$request->start_date,$request->end_date]
+                    [$validated['start_date'], $validated['end_date']]
                 )
                 ->get();
 
@@ -63,7 +65,9 @@ class ReportController extends Controller
 
     public function generatePdf(Request $request)
     {
-        if($request->type == 'booking'){
+        $validated = $this->validateReportRequest($request);
+
+        if($validated['type'] === 'booking'){
 
             $data = DB::table('bookings as b')
                 ->join('customers as c','b.customer_id','=','c.customer_id')
@@ -77,20 +81,24 @@ class ReportController extends Controller
                     's.service_date'
                 )
                 ->whereBetween('s.service_date',[
-                    $request->start_date,
-                    $request->end_date
+                    $validated['start_date'],
+                    $validated['end_date']
                 ])
                 ->get();
 
             $pdf = Pdf::loadView(
-                'layouts.admin.report.booking_pdf',
-                compact('data')
+                'layouts.admin.report.pdf',
+                [
+                    'data' => $data,
+                    'startDate' => $validated['start_date'],
+                    'endDate' => $validated['end_date'],
+                ]
             );
 
             return $pdf->download('laporan-booking.pdf');
         }
 
-        if($request->type == 'complaint'){
+        if($validated['type'] === 'complaint'){
 
             $data = DB::table('complaints as cp')
                 ->join('customers as c','cp.customer_id','=','c.customer_id')
@@ -98,24 +106,45 @@ class ReportController extends Controller
                     'c.customer_name',
                     'cp.subject',
                     'cp.complaint_text',
+                    'cp.admin_response',
                     'cp.status',
                     'cp.created_at'
                 )
                 ->whereBetween(
                     DB::raw('DATE(cp.created_at)'),
                     [
-                        $request->start_date,
-                        $request->end_date
+                        $validated['start_date'],
+                        $validated['end_date']
                     ]
                 )
                 ->get();
 
             $pdf = Pdf::loadView(
                 'layouts.admin.report.complaint_pdf',
-                compact('data')
+                [
+                    'data' => $data,
+                    'startDate' => $validated['start_date'],
+                    'endDate' => $validated['end_date'],
+                ]
             );
 
             return $pdf->download('laporan-keluhan.pdf');
         }
+
+        abort(422, 'Jenis laporan tidak valid.');
+    }
+
+    private function validateReportRequest(Request $request): array
+    {
+        return $request->validate([
+            'type' => ['required', 'in:booking,complaint'],
+            'start_date' => ['required', 'date_format:Y-m-d'],
+            'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+        ], [
+            'type.in' => 'Jenis laporan tidak valid.',
+            'start_date.date_format' => 'Tanggal mulai harus berformat YYYY-MM-DD.',
+            'end_date.date_format' => 'Tanggal akhir harus berformat YYYY-MM-DD.',
+            'end_date.after_or_equal' => 'Tanggal akhir harus setelah atau sama dengan tanggal mulai.',
+        ]);
     }
 }
